@@ -1,7 +1,7 @@
 {
   "name": "sistema-doces-backend",
   "version": "1.0.0",
-  "description": "DocePonto — fase 2: API Express, PostgreSQL e autenticação administrativa com JWT",
+  "description": "DocePonto — API de produtos, estoque, pedidos, restaurantes, financeiro e dashboard",
   "main": "src/server.js",
   "private": true,
   "engines": {
