@@ -17,6 +17,8 @@ function limiter({ windowMs, limit, mensagem }) {
 const MIN = 60 * 1000;
 
 module.exports = {
+  publicWriteLimiter: limiter({ windowMs: 15 * MIN, limit: 30, mensagem: 'Muitas solicitações. Tente novamente em alguns minutos.' }),
+  publicReadLimiter: limiter({ windowMs: 15 * MIN, limit: 120, mensagem: 'Muitas consultas. Tente novamente em alguns minutos.' }),
   // força bruta no login
   loginLimiter: limiter({ windowMs: 15 * MIN, limit: 10, mensagem: 'Muitas tentativas de login. Tente novamente em alguns minutos.' }),
 };

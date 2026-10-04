@@ -10,6 +10,7 @@ const config = {
   env,
   isTest: env === 'test',
   port: Number(process.env.PORT) || 3000,
+  timezone: process.env.APP_TIMEZONE || 'America/Sao_Paulo',
   corsOrigins: (process.env.CORS_ORIGIN || '*')
     .split(',')
     .map((o) => o.trim())
