@@ -8,11 +8,11 @@ let ctx;
 before(async () => { ctx = await setup(); });
 after(async () => { if (ctx) await ctx.teardown(); });
 
-test('banco novo contém somente administradores e controle de migrations', async () => {
+test('banco novo contém todas as tabelas do backend', async () => {
   const { rows } = await ctx.pool.query(
     `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name`,
   );
-  assert.deepEqual(rows.map((r) => r.table_name), ['schema_migrations', 'usuarios_admin']);
+  assert.deepEqual(rows.map((r) => r.table_name), ['clientes', 'estoque_movimentacoes', 'financeiro_entradas', 'financeiro_saidas', 'itens_pedido', 'pedido_observacoes', 'pedido_status_historico', 'pedidos', 'produtos', 'restaurantes', 'schema_migrations', 'usuarios_admin', 'vendas_restaurantes']);
 });
 
 test('migrations e cadastro inicial são idempotentes e preservam a administradora', async () => {
@@ -24,8 +24,8 @@ test('migrations e cadastro inicial são idempotentes e preservam a administrado
   await ensureInitialAdmin();
   const after = await ctx.pool.query('SELECT * FROM usuarios_admin');
   assert.deepEqual(after.rows, before.rows);
-  const { rows } = await ctx.pool.query('SELECT nome FROM schema_migrations');
-  assert.deepEqual(rows, [{ nome: '004_autenticacao.sql' }]);
+  const { rows } = await ctx.pool.query('SELECT nome FROM schema_migrations ORDER BY nome');
+  assert.deepEqual(rows, ['004_autenticacao.sql', '005_produtos_estoque.sql', '006_pedidos.sql', '007_restaurantes_financeiro.sql'].map((nome) => ({ nome })));
 });
 
 test('a senha fica armazenada somente como hash bcrypt válido', async () => {
@@ -121,13 +121,11 @@ test('cabeçalho de autenticação malformado é recusado', async () => {
   }
 });
 
-test('rotas das etapas futuras não estão disponíveis mesmo com token', async () => {
-  for (const path of ['/produtos', '/estoque/movimentacao', '/pedidos', '/restaurantes',
+test('todos os módulos administrativos exigem autenticação', async () => {
+  for (const path of ['/estoque/movimentacoes', '/pedidos', '/restaurantes',
     '/vendas-restaurantes', '/financeiro/entradas', '/financeiro/saidas', '/dashboard/resumo']) {
-    for (const method of ['GET', 'POST']) {
-      const res = await ctx.api(method, path, { token: ctx.token });
-      assert.equal(res.status, 404, `${method} ${path}`);
-    }
+    assert.equal((await ctx.api('GET', path)).status, 401, path);
+    assert.equal((await ctx.api('GET', path, { token: ctx.token })).status, 200, path);
   }
 });
 
@@ -135,6 +133,9 @@ test('health é público e retorna o estado da API', async () => {
   const res = await ctx.api('GET', '/health');
   assert.equal(res.status, 200);
   assert.deepEqual(res.body, { status: 'ok' });
+  const ready = await ctx.api('GET', '/health/ready');
+  assert.equal(ready.status, 200);
+  assert.deepEqual(ready.body, { status: 'ok', banco: 'conectado' });
 });
 
 test('rota inexistente e JSON malformado retornam erros padronizados', async () => {
@@ -157,10 +158,12 @@ test('CORS responde ao preflight da origem configurada', async () => {
   assert.equal(res.headers.get('access-control-allow-origin'), 'http://localhost:5173');
 });
 
-test('documentação contém apenas os endpoints da fase 2 e referências válidas', async () => {
+test('documentação contém os módulos do backend e referências válidas', async () => {
   const res = await ctx.api('GET', '/docs/openapi.json');
   assert.equal(res.status, 200);
-  assert.deepEqual(Object.keys(res.body.paths).sort(), ['/auth/login', '/auth/me', '/health']);
+  assert.ok(Object.keys(res.body.paths).length >= 20);
+  assert.ok(res.body.paths['/auth/me']);
+  assert.ok(res.body.paths['/dashboard/resumo']);
   function checkRefs(value) {
     if (!value || typeof value !== 'object') return;
     if (value.$ref) {

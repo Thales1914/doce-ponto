@@ -7,7 +7,7 @@ delete process.env.DATABASE_URL;
 process.env.POSTGRES_USER = process.env.POSTGRES_USER || 'doces';
 process.env.POSTGRES_PASSWORD = process.env.POSTGRES_PASSWORD || 'doces';
 const { randomBytes } = require('node:crypto');
-const testDb = `doces_fase2_test_${process.pid}_${randomBytes(6).toString('hex')}`;
+const testDb = `doces_test_${process.pid}_${randomBytes(6).toString('hex')}`;
 process.env.POSTGRES_DB = testDb;
 process.env.ADMIN_EMAIL = 'admin@teste.local';
 process.env.ADMIN_SENHA = 'senha-de-teste';
@@ -33,7 +33,7 @@ async function databaseCommand(sql) {
   }
 }
 
-async function setup() {
+async function setup({ beforeMigrate } = {}) {
   await databaseCommand(`CREATE DATABASE "${testDb}"`);
   const { pool } = require('../src/db/pool');
   let server;
@@ -50,6 +50,7 @@ async function setup() {
     const { migrate } = require('../src/db/migrate');
     const { ensureInitialAdmin } = require('../src/services/authService');
     const app = require('../src/app');
+    if (beforeMigrate) await beforeMigrate(pool);
     await migrate({ silent: true });
     // Exercita a criação concorrente da mesma administradora no primeiro boot.
     await Promise.all([ensureInitialAdmin(), ensureInitialAdmin()]);
@@ -62,6 +63,7 @@ async function setup() {
     async function api(method, path, { body, token } = {}) {
       const res = await fetch(base + path, {
         method,
+        signal: AbortSignal.timeout(10000),
         headers: {
           ...(body !== undefined && { 'Content-Type': 'application/json' }),
           ...(token && { Authorization: `Bearer ${token}` }),

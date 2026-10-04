@@ -1,0 +1,42 @@
+name: Backend
+
+on:
+  push:
+    branches: [develop, 'feature/**', 'fix/**', 'test/**', 'chore/**']
+  pull_request:
+    branches: [develop]
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: doces
+          POSTGRES_PASSWORD: testes-ci
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U doces -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      POSTGRES_USER: doces
+      POSTGRES_PASSWORD: testes-ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
