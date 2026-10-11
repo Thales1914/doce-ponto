@@ -12,7 +12,10 @@
     "dev": "node --watch --env-file-if-exists=.env src/server.js",
     "migrate": "node --env-file-if-exists=.env src/db/migrate.js",
     "test": "node --test --test-concurrency=1 \"tests/**/*.test.js\"",
-    "test:local": "node --env-file=.env --test --test-concurrency=1 \"tests/**/*.test.js\""
+    "test:local": "node --env-file=.env --test --test-concurrency=1 \"tests/**/*.test.js\"",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "test:frontend": "npm --prefix frontend test"
   },
   "license": "UNLICENSED",
   "dependencies": {

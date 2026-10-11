@@ -1,0 +1,57 @@
+name: Frontend
+on:
+  push:
+    branches: [develop, 'feature/**', 'fix/**', 'test/**', 'chore/**']
+  pull_request:
+    branches: [develop]
+permissions:
+  contents: read
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: doces
+          POSTGRES_PASSWORD: testes-ci
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U doces -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      POSTGRES_USER: doces
+      POSTGRES_PASSWORD: testes-ci
+      FRONTEND_LIVE_TEST: '1'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm ci
+        working-directory: .
+      - name: Iniciar API em banco isolado
+        working-directory: .
+        run: |
+          node tests/frontend-server.js > /tmp/doceponto-qa.log 2>&1 &
+          echo $! > /tmp/doceponto-qa.pid
+          node -e "(async () => { for (let i=0;i<30;i++) { try { const r=await fetch('http://127.0.0.1:3100/api/health/ready'); if (r.ok) return; } catch {} await new Promise(r=>setTimeout(r,1000)); } process.exit(1); })()"
+      - run: npm test
+      - run: npm run build
+      - name: Encerrar API de testes
+        if: always()
+        run: |
+          if [ -f /tmp/doceponto-qa.pid ]; then kill -TERM "$(cat /tmp/doceponto-qa.pid)"; fi
