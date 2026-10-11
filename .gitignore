@@ -3,6 +3,9 @@ node_modules
 .env.*
 !.env.example
 npm-debug.log*
+frontend/dist/
+frontend/coverage/
+frontend/test-results/
 
 # Documentos e evidências ficam apenas no ambiente local.
 /README.md
