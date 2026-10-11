@@ -1,12 +1,17 @@
 import { Component, Suspense, lazy, type ReactNode } from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider } from './context/Auth';
 import { CartProvider } from './context/Cart';
-import { PublicLayout } from './components/Layouts';
+import { PublicLayout, AdminLayout } from './components/Layouts';
 import { Loading } from './components/UI';
 import Catalog from './pages/Catalog';
 const Checkout = lazy(() => import('./pages/Checkout'));
 const Confirmation = lazy(() => import('./pages/Confirmation'));
+const Login = lazy(() => import('./pages/Login'));
+const Orders = lazy(() => import('./pages/Orders'));
+const OrderDetail = lazy(() => import('./pages/OrderDetail'));
+const Products = lazy(() => import('./pages/Products'));
+const Stock = lazy(() => import('./pages/Stock'));
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -41,6 +46,14 @@ export default function App() {
                 <Route index element={<Catalog />} />
                 <Route path="pedido" element={<Checkout />} />
                 <Route path="pedido-enviado/:numero" element={<Confirmation />} />
+              </Route>
+              <Route path="admin/login" element={<Login />} />
+              <Route path="admin" element={<AdminLayout />}>
+                <Route index element={<Navigate to="pedidos" replace />} />
+                <Route path="pedidos" element={<Orders />} />
+                <Route path="pedidos/:id" element={<OrderDetail />} />
+                <Route path="produtos" element={<Products />} />
+                <Route path="estoque" element={<Stock />} />
               </Route>
               <Route
                 path="*"
