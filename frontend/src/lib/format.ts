@@ -27,3 +27,23 @@ export function parsePrice(input: string) {
   const normalized = input.trim().replace(',', '.');
   return /^\d+(\.\d{1,2})?$/.test(normalized) ? Number(normalized) : NaN;
 }
+export const dateOnly = (value: string) => value.slice(0, 10).split('-').reverse().join('/');
+export const today = () =>
+  new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' });
+export const paymentLabels = {
+  pendente: 'A receber',
+  recebido: 'Recebido',
+  cancelado: 'Cancelado',
+};
+export const originLabels = {
+  pedido: 'Pedido de cliente',
+  venda_restaurante: 'Venda a restaurante',
+  manual: 'Lançamento manual',
+};
+export const paymentMethods = [
+  'Pix',
+  'Dinheiro',
+  'Cartão de crédito',
+  'Cartão de débito',
+  'Transferência',
+];

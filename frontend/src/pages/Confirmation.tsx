@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Check, Copy, ArrowLeft } from 'lucide-react';
+import { Check, Copy, ArrowLeft, Search } from 'lucide-react';
 import { useResource } from '../lib/useResource';
 import { money } from '../lib/format';
 import { ErrorNotice, Loading } from '../components/UI';
@@ -60,10 +60,19 @@ export default function Confirmation() {
               A equipe entrará em contato para combinar a confirmação, a entrega ou retirada e o
               pagamento.
             </p>
-            <Link to="/" className="button button-primary">
-              <ArrowLeft size={17} />
-              Voltar ao cardápio
-            </Link>
+            <div className="confirmation-actions">
+              <Link
+                to={`/acompanhar/${encodeURIComponent(data.numero_pedido)}`}
+                className="button button-quiet"
+              >
+                <Search size={17} />
+                Acompanhar pedido
+              </Link>
+              <Link to="/" className="button button-primary">
+                <ArrowLeft size={17} />
+                Voltar ao cardápio
+              </Link>
+            </div>
           </section>
         )
       )}

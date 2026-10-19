@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
@@ -202,5 +202,204 @@ describe('Limites e autenticação HTTP', () => {
     expect(fetchMock.mock.calls[0][1].headers).not.toHaveProperty('Authorization');
     expect(event).not.toHaveBeenCalled();
     window.removeEventListener(SESSION_EXPIRED, event);
+  });
+});
+describe('Gestão comercial e financeira', () => {
+  const page = (data: unknown[], extra = {}) => ({
+    data,
+    meta: { page: 1, limit: 15, total: data.length, total_paginas: 1 },
+    ...extra,
+  });
+  it('registra venda a restaurante com o valor do cardápio quando nenhum valor é informado', async () => {
+    const user = userEvent.setup();
+    sessionStorage.setItem(SESSION_KEY, 'token');
+    let submitted: unknown;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, options: RequestInit) => {
+        if (url.endsWith('/auth/me')) return json(admin);
+        if (url.endsWith('/restaurantes')) return json([{ id: 7, nome: 'Café Central' }]);
+        if (url.endsWith('/produtos')) return json([product]);
+        if (url === '/api/vendas-restaurantes' && options.method === 'POST') {
+          submitted = JSON.parse(String(options.body));
+          return json({ id: 1 }, 201);
+        }
+        if (url.startsWith('/api/vendas-restaurantes')) return json(page([]));
+        throw new Error(url);
+      }),
+    );
+    mount('/admin/vendas');
+    await user.click(await screen.findByRole('button', { name: 'Nova venda' }));
+    const dialog = screen.getByRole('dialog');
+    await waitFor(() => expect(within(dialog).getByLabelText('Restaurante')).toBeEnabled());
+    await user.selectOptions(within(dialog).getByLabelText('Restaurante'), '7');
+    await user.selectOptions(within(dialog).getByLabelText('Produto vendido'), '1');
+    await user.type(within(dialog).getByLabelText('Quantidade'), '4');
+    expect(within(dialog).getByText(/preço do cardápio: R\$\s14,00/)).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Registrar venda' }));
+    expect(await screen.findByText(/Venda registrada/)).toBeInTheDocument();
+    expect(submitted).toEqual({ restaurante_id: 7, produto_id: 1, quantidade: 4 });
+  });
+  it('impede vender mais do que o estoque disponível sem chamar a API', async () => {
+    const user = userEvent.setup();
+    sessionStorage.setItem(SESSION_KEY, 'token');
+    const fetchMock = vi.fn(async (url: string, options: RequestInit) => {
+      if (url.endsWith('/auth/me')) return json(admin);
+      if (url.endsWith('/restaurantes')) return json([{ id: 7, nome: 'Café Central' }]);
+      if (url.endsWith('/produtos')) return json([product]);
+      if (options.method === 'POST') throw new Error('não deveria enviar');
+      return json(page([]));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    mount('/admin/vendas');
+    await user.click(await screen.findByRole('button', { name: 'Nova venda' }));
+    const dialog = screen.getByRole('dialog');
+    await waitFor(() => expect(within(dialog).getByLabelText('Restaurante')).toBeEnabled());
+    await user.selectOptions(within(dialog).getByLabelText('Restaurante'), '7');
+    await user.selectOptions(within(dialog).getByLabelText('Produto vendido'), '1');
+    await user.type(within(dialog).getByLabelText('Quantidade'), '21');
+    await user.click(within(dialog).getByRole('button', { name: 'Registrar venda' }));
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('Estoque insuficiente');
+  });
+  it('registra o recebimento de uma entrada pendente com forma e data', async () => {
+    const user = userEvent.setup();
+    sessionStorage.setItem(SESSION_KEY, 'token');
+    let submitted: unknown;
+    const entry = {
+      id: 3,
+      pedido_id: 9,
+      numero_pedido: 'PED-ABCDEFGH',
+      descricao: 'Pedido PED-ABCDEFGH',
+      valor: 21,
+      forma: null,
+      status: 'pendente',
+      data: '2026-10-10',
+      origem: 'pedido',
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, options: RequestInit) => {
+        if (url.endsWith('/auth/me')) return json(admin);
+        if (url === '/api/financeiro/entradas/3/status') {
+          submitted = JSON.parse(String(options.body));
+          return json({ ...entry, status: 'recebido' });
+        }
+        if (url.startsWith('/api/financeiro/entradas'))
+          return json(page([entry], { totais: { recebido: 0, pendente: 21, cancelado: 0 } }));
+        throw new Error(url);
+      }),
+    );
+    mount('/admin/financeiro');
+    expect(await screen.findByText('10/10/2026')).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', { name: 'Registrar recebimento de Pedido PED-ABCDEFGH' }),
+    );
+    const dialog = screen.getByRole('dialog');
+    await user.type(within(dialog).getByLabelText(/Forma de pagamento/), 'Pix');
+    await user.clear(within(dialog).getByLabelText('Data do recebimento'));
+    await user.type(within(dialog).getByLabelText('Data do recebimento'), '2026-10-12');
+    await user.click(within(dialog).getByRole('button', { name: 'Confirmar recebimento' }));
+    expect(await screen.findByText('Recebimento registrado.')).toBeInTheDocument();
+    expect(submitted).toEqual({ status: 'recebido', forma: 'Pix', data: '2026-10-12' });
+  });
+  it('mostra o resumo do período e completa os dias sem venda no gráfico', async () => {
+    sessionStorage.setItem(SESSION_KEY, 'token');
+    const count = (quantidade: number, valor: number) => ({ quantidade, valor });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url.endsWith('/auth/me')) return json(admin);
+        if (url.startsWith('/api/dashboard/resumo'))
+          return json({
+            periodo: { inicio: '2026-10-01', fim: '2026-10-05' },
+            vendas: {
+              total: 150,
+              pedidos: count(2, 50),
+              restaurantes: count(1, 100),
+              por_dia: [
+                { data: '2026-10-02', valor: 50 },
+                { data: '2026-10-04', valor: 100 },
+              ],
+            },
+            recebimentos: count(1, 100),
+            pendencias: {
+              total: 50,
+              quantidade: 2,
+              por_origem: { pedidos: count(2, 50), restaurantes: count(0, 0), manual: count(0, 0) },
+            },
+            despesas: count(1, 130),
+            saldo_periodo: -30,
+            estoque: {
+              total_unidades: 3,
+              produtos: [{ id: 1, nome: 'Brigadeiro', quantidade_disponivel: 3 }],
+            },
+            pedidos_por_status: {
+              solicitado: 1,
+              confirmado: 1,
+              em_producao: 0,
+              pronto: 0,
+              entregue: 0,
+              cancelado: 0,
+            },
+          });
+        throw new Error(url);
+      }),
+    );
+    mount('/admin/visao-geral');
+    expect(await screen.findByText('De 01/10/2026 a 05/10/2026.')).toBeInTheDocument();
+    expect(screen.getByText('-R$ 30,00')).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem', { name: /\/10\/2026/ })).toHaveLength(5);
+    expect(screen.getByRole('listitem', { name: /^03\/10\/2026: R\$\s0,00$/ })).toBeInTheDocument();
+    expect(screen.getByText('Brigadeiro')).toBeInTheDocument();
+  });
+  it('acompanha o pedido pelo código e envia observação sem token', async () => {
+    const user = userEvent.setup();
+    sessionStorage.setItem(SESSION_KEY, 'token-admin');
+    let request: RequestInit | undefined;
+    const tracking = {
+      numero_pedido: 'PED-ABCDEFGH',
+      status: 'em_producao',
+      status_descricao: 'Em produção',
+      criado_em: '2026-10-11T12:00:00Z',
+      atualizado_em: '2026-10-11T13:00:00Z',
+      itens: [{ produto_id: 1, produto_nome: 'Brigadeiro', quantidade: 2, subtotal: 7 }],
+      total: 7,
+      observacoes: null,
+      observacoes_adicionais: [],
+      historico: [
+        { status: 'solicitado', status_descricao: 'Pedido recebido', data: '2026-10-11T12:00:00Z' },
+      ],
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, options: RequestInit) => {
+        if (url === '/api/pedidos/PED-ABCDEFGH/observacoes') {
+          request = options;
+          return json({ texto: 'Retiro às 17h', criado_em: '2026-10-11T14:00:00Z' }, 201);
+        }
+        if (url === '/api/pedidos/PED-ABCDEFGH') return json(tracking);
+        throw new Error(url);
+      }),
+    );
+    mount('/acompanhar');
+    await user.type(await screen.findByLabelText('Número do pedido'), 'ped-abcdefgh');
+    await user.click(screen.getByRole('button', { name: 'Acompanhar' }));
+    expect(await screen.findByRole('heading', { name: 'PED-ABCDEFGH' })).toBeInTheDocument();
+    expect(screen.getByRole('listitem', { current: 'step' })).toHaveTextContent('Em produção');
+    await user.type(screen.getByLabelText('Adicionar observação'), 'Retiro às 17h');
+    await user.click(screen.getByRole('button', { name: 'Enviar observação' }));
+    expect(await screen.findByText('Observação enviada para a equipe.')).toBeInTheDocument();
+    expect(JSON.parse(String(request!.body))).toEqual({ texto: 'Retiro às 17h' });
+    expect(request!.headers).not.toHaveProperty('Authorization');
+  });
+  it('recusa código de pedido em formato inválido antes de consultar', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    mount('/acompanhar');
+    await user.type(await screen.findByLabelText('Número do pedido'), 'PED-123');
+    await user.click(screen.getByRole('button', { name: 'Acompanhar' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('PED-XXXXXXXX');
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
