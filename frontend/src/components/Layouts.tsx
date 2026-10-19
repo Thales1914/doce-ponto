@@ -7,6 +7,10 @@ import {
   ArrowUpRight,
   ShoppingBag,
   Heart,
+  LayoutDashboard,
+  Store,
+  Truck,
+  Wallet,
 } from 'lucide-react';
 import { useAuth } from '../context/Auth';
 import { useCart } from '../context/Cart';
@@ -26,6 +30,9 @@ export function PublicLayout() {
           <Link to="/#como-pedir" className="how-link">
             Como pedir
           </Link>
+          <NavLink to="/acompanhar" className="how-link">
+            Acompanhar pedido
+          </NavLink>
           <Link className="cart-link" to="/pedido">
             <ShoppingBag size={19} />
             <span>Seu pedido</span>
@@ -41,9 +48,12 @@ export function PublicLayout() {
         <span>
           Um pouco de carinho em cada escolha. <Heart size={13} />
         </span>
-        <Link to="/admin">
-          Área administrativa <ArrowUpRight size={14} />
-        </Link>
+        <div className="footer-links">
+          <Link to="/acompanhar">Acompanhar pedido</Link>
+          <Link to="/admin">
+            Área administrativa <ArrowUpRight size={14} />
+          </Link>
+        </div>
       </footer>
     </div>
   );
@@ -71,6 +81,10 @@ export function AdminLayout() {
         <Brand />
         <div className="sidebar-label">ÁREA ADMINISTRATIVA</div>
         <nav aria-label="Painel administrativo">
+          <NavLink to="/admin/visao-geral">
+            <LayoutDashboard size={20} />
+            Visão geral
+          </NavLink>
           <NavLink to="/admin/pedidos">
             <ClipboardList size={20} />
             Pedidos
@@ -82,6 +96,18 @@ export function AdminLayout() {
           <NavLink to="/admin/estoque">
             <ArrowLeftRight size={20} />
             Estoque
+          </NavLink>
+          <NavLink to="/admin/restaurantes">
+            <Store size={20} />
+            Restaurantes
+          </NavLink>
+          <NavLink to="/admin/vendas">
+            <Truck size={20} />
+            Vendas
+          </NavLink>
+          <NavLink to="/admin/financeiro">
+            <Wallet size={20} />
+            Financeiro
           </NavLink>
         </nav>
         <div className="sidebar-bottom">
