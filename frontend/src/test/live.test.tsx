@@ -38,12 +38,15 @@ describe.skipIf(!process.env.FRONTEND_LIVE_TEST)(
       await user.type(await screen.findByLabelText('E-mail'), 'admin@teste.local');
       await user.type(screen.getByLabelText('Senha'), 'senha-de-teste');
       await user.click(screen.getByRole('button', { name: 'Entrar no painel' }));
+      await user.click(await screen.findByRole('link', { name: 'Pedidos' }));
       await user.click(await screen.findByRole('link', { name: `Ver pedido ${code}` }));
       await screen.findByRole('heading', { name: code });
       expect(await screen.findByText('Cliente QA Interface')).toBeInTheDocument();
       expect(await screen.findByText('Retirar na portaria.')).toBeInTheDocument();
       await user.click(screen.getByRole('button', { name: 'Atualizar status' }));
-      expect(await screen.findByText('Status do pedido atualizado.')).toBeInTheDocument();
+      await waitFor(() =>
+        expect(screen.getByText('Status do pedido atualizado.')).toBeInTheDocument(),
+      );
       await waitFor(() => expect(screen.getByLabelText('Novo status')).toHaveValue('em_producao'));
       await user.click(screen.getByRole('link', { name: 'Estoque' }));
       const productSelect = (await screen.findAllByLabelText('Produto'))[0];
@@ -171,6 +174,23 @@ describe.skipIf(!process.env.FRONTEND_LIVE_TEST)(
       expect(
         await screen.findByText('36 unidades', { selector: '.balance-preview strong' }),
       ).toBeInTheDocument();
+      await user.click(screen.getByRole('link', { name: 'Visão geral' }));
+      expect(await screen.findByRole('article', { name: 'Vendas no período' })).toHaveTextContent(
+        '14,00',
+      );
+      expect(screen.getByRole('article', { name: 'Recebido no período' })).toHaveTextContent(
+        '10,50',
+      );
+      expect(screen.getByRole('article', { name: 'Despesas no período' })).toHaveTextContent(
+        '4,25',
+      );
+      expect(screen.getByRole('article', { name: 'Saldo do período' })).toHaveTextContent('6,25');
+      expect(screen.getByRole('article', { name: 'Pendente atualmente' })).toHaveTextContent(
+        '14,00',
+      );
+      expect(screen.getByRole('article', { name: 'Estoque atual' })).toHaveTextContent(
+        '86 unidades',
+      );
       await user.click(screen.getByRole('button', { name: 'Sair da conta' }));
       expect(
         await screen.findByRole('heading', { name: 'Vamos cuidar dos pedidos?' }),
