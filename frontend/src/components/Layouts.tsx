@@ -9,6 +9,7 @@ import {
   Heart,
   Store,
   Wallet,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useAuth } from '../context/Auth';
 import { useCart } from '../context/Cart';
@@ -76,6 +77,10 @@ export function AdminLayout() {
         <Brand />
         <div className="sidebar-label">ÁREA ADMINISTRATIVA</div>
         <nav aria-label="Painel administrativo">
+          <NavLink to="/admin/dashboard">
+            <LayoutDashboard size={20} />
+            Visão geral
+          </NavLink>
           <NavLink to="/admin/pedidos">
             <ClipboardList size={20} />
             Pedidos

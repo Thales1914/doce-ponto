@@ -98,3 +98,28 @@ export type Expense = {
   valor: number;
   data: string;
 };
+export type DashboardSummary = {
+  periodo: { inicio: string; fim: string };
+  vendas: {
+    total: number;
+    pedidos: { quantidade: number; valor: number };
+    restaurantes: { quantidade: number; valor: number };
+    por_dia: { data: string; valor: number }[];
+  };
+  recebimentos: { quantidade: number; valor: number };
+  despesas: { quantidade: number; valor: number };
+  saldo_periodo: number;
+  pendencias: {
+    total: number;
+    quantidade: number;
+    por_origem: Record<
+      'pedidos' | 'restaurantes' | 'manual',
+      { quantidade: number; valor: number }
+    >;
+  };
+  estoque: {
+    total_unidades: number;
+    produtos: { id: number; nome: string; quantidade_disponivel: number }[];
+  };
+  pedidos_por_status: Record<OrderStatus, number>;
+};

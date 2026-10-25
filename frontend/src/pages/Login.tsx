@@ -16,7 +16,7 @@ export default function Login() {
     location.state.from.startsWith('/admin/') &&
     !location.state.from.startsWith('/admin/login')
       ? location.state.from
-      : '/admin/pedidos';
+      : '/admin/dashboard';
   if (auth.token && auth.admin && !auth.loading && !auth.error)
     return <Navigate to={destination} replace />;
   async function submit(event: FormEvent<HTMLFormElement>) {

@@ -16,6 +16,7 @@ const Tracking = lazy(() => import('./pages/Tracking'));
 const Restaurants = lazy(() => import('./pages/Restaurants'));
 const Sales = lazy(() => import('./pages/Sales'));
 const Finance = lazy(() => import('./pages/Finance'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -55,7 +56,8 @@ export default function App() {
               </Route>
               <Route path="admin/login" element={<Login />} />
               <Route path="admin" element={<AdminLayout />}>
-                <Route index element={<Navigate to="pedidos" replace />} />
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
                 <Route path="pedidos" element={<Orders />} />
                 <Route path="pedidos/:id" element={<OrderDetail />} />
                 <Route path="produtos" element={<Products />} />
