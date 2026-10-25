@@ -1,5 +1,7 @@
 node_modules
 .env
+.env.*
+backups
 .git
 npm-debug.log
 *.md
