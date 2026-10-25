@@ -7,6 +7,8 @@ import {
   ArrowUpRight,
   ShoppingBag,
   Heart,
+  Store,
+  Wallet,
 } from 'lucide-react';
 import { useAuth } from '../context/Auth';
 import { useCart } from '../context/Cart';
@@ -22,6 +24,9 @@ export function PublicLayout() {
         <nav aria-label="Navegação principal">
           <NavLink to="/" end>
             Cardápio
+          </NavLink>
+          <NavLink to="/acompanhar" className="tracking-link">
+            Acompanhar pedido
           </NavLink>
           <Link to="/#como-pedir" className="how-link">
             Como pedir
@@ -82,6 +87,18 @@ export function AdminLayout() {
           <NavLink to="/admin/estoque">
             <ArrowLeftRight size={20} />
             Estoque
+          </NavLink>
+          <NavLink to="/admin/restaurantes">
+            <Store size={20} />
+            Restaurantes
+          </NavLink>
+          <NavLink to="/admin/vendas">
+            <ShoppingBag size={20} />
+            Vendas
+          </NavLink>
+          <NavLink to="/admin/financeiro">
+            <Wallet size={20} />
+            Financeiro
           </NavLink>
         </nav>
         <div className="sidebar-bottom">

@@ -277,6 +277,69 @@ fieldset {
   font-size: 13px;
   font-weight: 500;
 }
+
+.form-fields {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  min-width: 0;
+}
+.ledger-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.ledger-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.finance-totals {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin: 24px 0;
+}
+.finance-totals > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+.finance-totals strong {
+  font-size: 24px;
+}
+.tracking-search {
+  display: flex;
+  align-items: end;
+  gap: 20px;
+}
+.tracking-search label {
+  flex: 1;
+  margin: 0;
+}
+.tracking-search button {
+  margin-bottom: 0;
+}
+@media (max-width: 560px) {
+  .tracking-search {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .store-header {
+    flex-wrap: wrap;
+  }
+  .store-header nav {
+    gap: 16px !important;
+    flex-wrap: wrap;
+  }
+  .store-header nav > a.tracking-link {
+    display: inline-flex !important;
+  }
+}
 .store-header nav > a.active {
   color: var(--accent);
 }
@@ -1654,6 +1717,8 @@ dd {
     display: none;
   }
   .sidebar nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     flex-direction: row;
     order: 3;
     width: 100%;

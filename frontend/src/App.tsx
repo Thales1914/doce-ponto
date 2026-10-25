@@ -12,6 +12,10 @@ const Orders = lazy(() => import('./pages/Orders'));
 const OrderDetail = lazy(() => import('./pages/OrderDetail'));
 const Products = lazy(() => import('./pages/Products'));
 const Stock = lazy(() => import('./pages/Stock'));
+const Tracking = lazy(() => import('./pages/Tracking'));
+const Restaurants = lazy(() => import('./pages/Restaurants'));
+const Sales = lazy(() => import('./pages/Sales'));
+const Finance = lazy(() => import('./pages/Finance'));
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -46,6 +50,8 @@ export default function App() {
                 <Route index element={<Catalog />} />
                 <Route path="pedido" element={<Checkout />} />
                 <Route path="pedido-enviado/:numero" element={<Confirmation />} />
+                <Route path="acompanhar" element={<Tracking />} />
+                <Route path="acompanhar/:numero" element={<Tracking />} />
               </Route>
               <Route path="admin/login" element={<Login />} />
               <Route path="admin" element={<AdminLayout />}>
@@ -54,6 +60,9 @@ export default function App() {
                 <Route path="pedidos/:id" element={<OrderDetail />} />
                 <Route path="produtos" element={<Products />} />
                 <Route path="estoque" element={<Stock />} />
+                <Route path="restaurantes" element={<Restaurants />} />
+                <Route path="vendas" element={<Sales />} />
+                <Route path="financeiro" element={<Finance />} />
               </Route>
               <Route
                 path="*"

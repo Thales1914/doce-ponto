@@ -45,6 +45,14 @@ export type Receipt = {
   itens: OrderItem[];
   criado_em: string;
 };
+export type TrackedOrder = Receipt & {
+  status: OrderStatus;
+  status_descricao: string;
+  atualizado_em: string;
+  observacoes: string | null;
+  historico: { status: OrderStatus; status_descricao: string; data: string }[];
+  observacoes_adicionais: { texto: string; criado_em: string }[];
+};
 export type Movement = {
   id: number;
   produto_id: number;
@@ -59,4 +67,34 @@ export type Movement = {
 export type Page<T> = {
   data: T[];
   meta: { page: number; limit: number; total: number; total_paginas: number };
+};
+export type Restaurant = { id: number; nome: string; contato: string | null };
+export type Sale = {
+  id: number;
+  restaurante_id: number;
+  restaurante_nome: string;
+  produto_id: number;
+  produto_nome: string;
+  quantidade: number;
+  valor_total: number;
+  status_pagamento: 'pendente' | 'recebido';
+  criado_em: string;
+};
+export type Income = {
+  id: number;
+  descricao: string | null;
+  valor: number;
+  forma: string | null;
+  status: 'pendente' | 'recebido' | 'cancelado';
+  data: string;
+  origem: 'pedido' | 'venda_restaurante' | 'manual';
+  numero_pedido: string | null;
+  restaurante_nome: string | null;
+};
+export type Expense = {
+  id: number;
+  descricao: string;
+  categoria: string | null;
+  valor: number;
+  data: string;
 };

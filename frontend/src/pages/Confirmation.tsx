@@ -64,6 +64,12 @@ export default function Confirmation() {
               <ArrowLeft size={17} />
               Voltar ao cardápio
             </Link>
+            <Link
+              to={`/acompanhar/${encodeURIComponent(data.numero_pedido)}`}
+              className="button button-quiet"
+            >
+              Acompanhar meu pedido
+            </Link>
           </section>
         )
       )}
