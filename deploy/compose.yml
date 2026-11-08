@@ -1,3 +1,5 @@
+# Mantém o ambiente e o volume locais existentes após a mudança de pasta.
+name: doces
 services:
   db:
     image: postgres:16-alpine
@@ -17,12 +19,12 @@ services:
       retries: 10
 
   api:
-    build: .
+    build: ../backend
     restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
-    env_file: .env
+    env_file: ../.env
     environment:
       NODE_ENV: development
       PORT: 3000
@@ -39,7 +41,7 @@ services:
       start_period: 20s
 
   frontend:
-    build: ./frontend
+    build: ../frontend
     restart: unless-stopped
     depends_on:
       api:

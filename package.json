@@ -1,39 +1,32 @@
 {
-  "name": "sistema-doces-backend",
+  "name": "doceponto",
   "version": "1.0.0",
-  "description": "DocePonto — API de produtos, estoque, pedidos, restaurantes, financeiro e dashboard",
-  "main": "src/server.js",
   "private": true,
-  "engines": {
-    "node": ">=22"
-  },
+  "description": "Comandos de desenvolvimento, testes e deploy do DocePonto",
+  "engines": { "node": ">=22.12.0" },
   "scripts": {
-    "start": "node --env-file-if-exists=.env src/server.js",
-    "dev": "node --watch --env-file-if-exists=.env src/server.js",
-    "migrate": "node --env-file-if-exists=.env src/db/migrate.js",
-    "test": "node --test --test-concurrency=1 \"tests/**/*.test.js\"",
+    "setup": "npm --prefix backend ci && npm --prefix frontend ci",
+    "start": "docker compose --env-file .env -f deploy/compose.yml up -d --build --wait",
+    "stop": "docker compose --env-file .env -f deploy/compose.yml stop",
+    "status": "docker compose --env-file .env -f deploy/compose.yml ps",
+    "logs": "docker compose --env-file .env -f deploy/compose.yml logs --tail 100",
+    "start:backend": "npm --prefix backend start",
+    "dev": "npm --prefix backend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "migrate": "npm --prefix backend run migrate",
+    "build": "npm --prefix frontend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "test": "node scripts/test-docker.cjs",
+    "test:backend": "npm --prefix backend test",
+    "test:frontend": "npm --prefix frontend test",
     "test:local": "node scripts/test-docker.cjs",
     "test:docker": "node scripts/test-docker.cjs",
-    "test:production": "node tests/production-smoke.cjs",
+    "test:production": "node scripts/production-smoke.cjs",
     "deploy:prepare": "node scripts/prepare-deploy.cjs",
     "deploy:check": "node scripts/check-deploy.cjs",
     "deploy": "node scripts/deploy.cjs",
-    "backup": "node scripts/backup-db.cjs",
-    "dev:frontend": "npm --prefix frontend run dev",
-    "build:frontend": "npm --prefix frontend run build",
-    "test:frontend": "npm --prefix frontend test"
+    "backup": "node scripts/backup-db.cjs"
   },
-  "license": "UNLICENSED",
-  "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.7.0",
-    "helmet": "^8.3.0",
-    "jsonwebtoken": "^9.0.3",
-    "pg": "^8.23.0",
-    "swagger-ui-express": "^5.0.1",
-    "yaml": "^2.9.1",
-    "zod": "^4.6.5"
-  }
+  "license": "UNLICENSED"
 }

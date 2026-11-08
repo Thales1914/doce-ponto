@@ -17,7 +17,6 @@ CMD ["node", "src/server.js"]
 # Testes disponíveis somente quando este estágio é solicitado explicitamente.
 FROM base AS test
 COPY tests ./tests
-COPY scripts ./scripts
 CMD ["npm", "test"]
 
 FROM base AS production

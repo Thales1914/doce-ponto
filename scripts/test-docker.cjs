@@ -3,7 +3,7 @@ const { randomBytes } = require('node:crypto');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const project = `doceponto-test-${randomBytes(6).toString('hex')}`;
-const base = ['compose', '-p', project, '-f', 'docker-compose.test.yml'];
+const base = ['compose', '-p', project, '-f', 'deploy/compose.test.yml'];
 function docker(args) {
   const result = spawnSync('docker', [...base, ...args], { cwd: root, stdio: 'inherit', windowsHide: true });
   if (result.error) throw result.error;

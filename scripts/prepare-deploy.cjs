@@ -2,8 +2,8 @@ const { parseArgs } = require('node:util');
 const { randomBytes } = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
-const { initialAdmin } = require('../src/validators/authSchemas');
-const { validateProductionEnv } = require('../src/config/production');
+const { initialAdmin } = require('../backend/src/validators/authSchemas');
+const { validateProductionEnv } = require('../backend/src/config/production');
 
 try {
   const { values } = parseArgs({ options: {

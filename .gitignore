@@ -6,6 +6,7 @@ npm-debug.log*
 frontend/dist/
 frontend/coverage/
 frontend/test-results/
+backend/coverage/
 *.log
 *.tsbuildinfo
 __pycache__/

@@ -14,7 +14,7 @@ services:
       timeout: 5s
       retries: 20
   backend:
-    build: { context: ., target: test }
+    build: { context: ../backend, target: test }
     environment: &test-env
       NODE_ENV: test
       DB_HOST: db
@@ -23,7 +23,7 @@ services:
     depends_on:
       db: { condition: service_healthy }
   qa:
-    build: { context: ., target: test }
+    build: { context: ../backend, target: test }
     environment: *test-env
     command: [node, tests/frontend-server.js]
     depends_on:
@@ -34,7 +34,7 @@ services:
       timeout: 5s
       retries: 20
   frontend:
-    build: { context: ./frontend, target: test }
+    build: { context: ../frontend, target: test }
     environment:
       FRONTEND_LIVE_TEST: '1'
       FRONTEND_TEST_API_URL: http://qa:3100/api

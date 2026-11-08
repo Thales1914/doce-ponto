@@ -18,7 +18,7 @@ const env = {
   ADMIN_SENHA: randomBytes(18).toString('hex'),
   PUBLIC_ORIGIN: 'https://localhost', HTTP_PORT: '127.0.0.1:0', HTTPS_PORT: '127.0.0.1:0',
 };
-const compose = ['compose', '-p', project, '-f', 'docker-compose.production.yml'];
+const compose = ['compose', '-p', project, '-f', 'deploy/compose.production.yml'];
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, { cwd: root, env, encoding: 'utf8', windowsHide: true, maxBuffer: 20 * 1024 * 1024, ...options });
   if (result.error) throw result.error;
@@ -104,7 +104,7 @@ async function main() {
     assert.equal((await request('/api/auth/me', { token })).status, 200);
     assert.equal((await request(`/api/pedidos/${order.data.numero_pedido}`)).data.status, 'confirmado');
     const dump = path.join(temp, 'backup.dump');
-    run(process.execPath, ['scripts/backup-db.cjs', '--project', project, '--compose', 'docker-compose.production.yml', '--output', dump]);
+    run(process.execPath, ['scripts/backup-db.cjs', '--project', project, '--compose', 'deploy/compose.production.yml', '--output', dump]);
     docker(['exec', '-T', 'db', 'createdb', '-U', 'smoke', 'restore_smoke']);
     docker(['exec', '-T', 'db', 'pg_restore', '-U', 'smoke', '-d', 'restore_smoke', '--exit-on-error', '--no-owner', '--no-privileges'], { input: fs.readFileSync(dump) });
     const sql = 'SELECT (SELECT count(*) FROM pedidos), (SELECT sum(quantidade_disponivel) FROM produtos), (SELECT sum(valor) FROM financeiro_entradas), (SELECT count(*) FROM schema_migrations)';

@@ -2,8 +2,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { parseEnv } = require('node:util');
 const { spawnSync } = require('node:child_process');
-const { initialAdmin } = require('../src/validators/authSchemas');
-const { validateProductionEnv } = require('../src/config/production');
+const { initialAdmin } = require('../backend/src/validators/authSchemas');
+const { validateProductionEnv } = require('../backend/src/config/production');
 function checkDeploy() {
   const root = path.resolve(__dirname, '..');
   const file = path.join(root, '.env.production');
@@ -15,7 +15,7 @@ function checkDeploy() {
     if (!config[key] || !/^[a-z_][a-z0-9_]*$/.test(config[key])) throw new Error(`${key}: use letras minúsculas, números e sublinhado.`);
   }
   // Mesmos valores no validador e no Compose, mesmo se o shell tiver variáveis homônimas.
-  const result = spawnSync('docker', ['compose', '--env-file', file, '-f', 'docker-compose.production.yml', 'config', '--quiet'], {
+  const result = spawnSync('docker', ['compose', '--env-file', file, '-f', 'deploy/compose.production.yml', 'config', '--quiet'], {
     cwd: root, env: { ...process.env, ...config }, stdio: 'inherit', windowsHide: true,
   });
   if (result.error) throw result.error;

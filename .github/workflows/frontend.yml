@@ -44,9 +44,9 @@ jobs:
       - run: npm audit --audit-level=high
       - run: npm run format:check
       - run: npm ci
-        working-directory: .
+        working-directory: backend
       - name: Iniciar API em banco isolado
-        working-directory: .
+        working-directory: backend
         run: |
           node tests/frontend-server.js > /tmp/doceponto-qa.log 2>&1 &
           echo $! > /tmp/doceponto-qa.pid

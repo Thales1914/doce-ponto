@@ -3,7 +3,7 @@ const { checkDeploy } = require('./check-deploy.cjs');
 try {
   const { root, file, env } = checkDeploy();
   const result = spawnSync('docker', [
-    'compose', '--env-file', file, '-f', 'docker-compose.production.yml',
+    'compose', '--env-file', file, '-f', 'deploy/compose.production.yml',
     'up', '-d', '--build', '--wait', '--wait-timeout', '180',
   ], { cwd: root, env, stdio: 'inherit', windowsHide: true });
   if (result.error) throw result.error;

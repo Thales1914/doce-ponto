@@ -7,6 +7,7 @@ const { pipeline } = require('node:stream/promises');
 const { once } = require('node:events');
 
 async function main() {
+  const root = path.resolve(__dirname, '..');
   const options = {};
   for (let i = 2; i < process.argv.length; i += 2) {
     const key = process.argv[i];
@@ -14,17 +15,19 @@ async function main() {
       throw new Error('Use --compose arquivo, --env-file arquivo, --project nome e/ou --output arquivo.dump.');
     options[key] = process.argv[i + 1];
   }
-  const file = path.resolve(options['--output'] || `backups/doceponto-${new Date().toISOString().replace(/[:.]/g, '-')}.dump`);
+  const envFile = options['--env-file'] ? path.resolve(options['--env-file']) : path.join(root, '.env');
+  if (options['--env-file'] && !fs.existsSync(envFile)) throw new Error('Arquivo de ambiente não encontrado.');
+  const file = options['--output'] ? path.resolve(options['--output']) : path.join(root, `backups/doceponto-${new Date().toISOString().replace(/[:.]/g, '-')}.dump`);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   // Criação exclusiva: nunca sobrescreve um backup existente.
   const fd = fs.openSync(file, 'wx', 0o600);
   const output = fs.createWriteStream(file, { fd });
   const args = ['compose'];
   if (options['--project']) args.push('--project-name', options['--project']);
-  if (options['--env-file']) args.push('--env-file', options['--env-file']);
-  args.push('-f', options['--compose'] || 'docker-compose.yml', 'exec', '-T', 'db', 'sh', '-c',
+  if (fs.existsSync(envFile)) args.push('--env-file', envFile);
+  args.push('-f', options['--compose'] ? path.resolve(options['--compose']) : path.join(root, 'deploy/compose.yml'), 'exec', '-T', 'db', 'sh', '-c',
     'exec pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom');
-  const child = spawn('docker', args, { stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
+  const child = spawn('docker', args, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
   let stderr = '';
   child.stderr.on('data', value => { stderr = (stderr + value).slice(-4000); });
   try {

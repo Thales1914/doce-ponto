@@ -1,6 +1,6 @@
 name: doceponto-production
 
-# Arquivo independente: não combinar com docker-compose.yml.
+# Arquivo independente: não combinar com compose.yml.
 # Implantação direta em servidor Docker: o frontend cuida do HTTPS do domínio.
 services:
   db:
@@ -22,7 +22,7 @@ services:
       options: { max-size: 10m, max-file: '3' }
 
   api:
-    build: .
+    build: ../backend
     restart: unless-stopped
     init: true
     depends_on:
@@ -58,7 +58,7 @@ services:
       options: { max-size: 10m, max-file: '3' }
 
   frontend:
-    build: ./frontend
+    build: ../frontend
     restart: unless-stopped
     environment:
       SITE_ADDRESS: ${PUBLIC_ORIGIN:?Configure PUBLIC_ORIGIN com a URL HTTPS do site}

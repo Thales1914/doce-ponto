@@ -13,6 +13,9 @@ jobs:
   integration:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
     services:
       postgres:
         image: postgres:16-alpine
@@ -38,6 +41,7 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+          cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npm audit --omit=dev --audit-level=high
       - run: npm test
