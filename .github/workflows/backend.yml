@@ -2,9 +2,9 @@ name: Backend
 
 on:
   push:
-    branches: [develop, 'feature/**', 'fix/**', 'test/**', 'chore/**']
+    branches: [dev, develop, 'feature/**', 'fix/**', 'test/**', 'chore/**']
   pull_request:
-    branches: [develop]
+    branches: [dev, develop]
 
 permissions:
   contents: read
