@@ -24,9 +24,11 @@ services:
         condition: service_healthy
     env_file: .env
     environment:
+      NODE_ENV: development
       PORT: 3000
       DB_HOST: db
       DB_PORT: 5432
+      TRUST_PROXY: '1'
     ports:
       - "${API_PORT:-3000}:3000"
     healthcheck:
@@ -45,7 +47,7 @@ services:
     ports:
       - "${FRONTEND_PORT:-5173}:80"
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8081/health"]
       interval: 15s
       timeout: 5s
       retries: 3

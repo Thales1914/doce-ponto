@@ -1,0 +1,19 @@
+name: Production
+on:
+  push:
+    branches: [develop, 'feature/**', 'fix/**', 'test/**', 'chore/**']
+  pull_request:
+    branches: [develop]
+permissions:
+  contents: read
+jobs:
+  production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validar imagens finais com HTTPS e banco descartável
+        run: npm run test:production

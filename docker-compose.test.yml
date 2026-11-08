@@ -1,0 +1,42 @@
+# Ambiente descartável. Nenhuma porta ou volume do projeto local é utilizado.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: testes
+      POSTGRES_PASSWORD: exclusivo-dos-testes
+      POSTGRES_DB: postgres
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U testes -d postgres']
+      interval: 2s
+      timeout: 5s
+      retries: 20
+  backend:
+    build: { context: ., target: test }
+    environment: &test-env
+      NODE_ENV: test
+      DB_HOST: db
+      POSTGRES_USER: testes
+      POSTGRES_PASSWORD: exclusivo-dos-testes
+    depends_on:
+      db: { condition: service_healthy }
+  qa:
+    build: { context: ., target: test }
+    environment: *test-env
+    command: [node, tests/frontend-server.js]
+    depends_on:
+      db: { condition: service_healthy }
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3100/api/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+  frontend:
+    build: { context: ./frontend, target: test }
+    environment:
+      FRONTEND_LIVE_TEST: '1'
+      FRONTEND_TEST_API_URL: http://qa:3100/api
+    depends_on:
+      qa: { condition: service_healthy }

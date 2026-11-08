@@ -1,5 +1,5 @@
 // Backup binário sem redirecionamento do PowerShell, preservando o arquivo pg_dump.
-// Uso: node scripts/backup-db.cjs [--compose arquivo.yml] [--env-file arquivo] [--output arquivo.dump]
+// Uso: node scripts/backup-db.cjs [--compose arquivo.yml] [--env-file arquivo] [--project nome] [--output arquivo.dump]
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
@@ -10,8 +10,8 @@ async function main() {
   const options = {};
   for (let i = 2; i < process.argv.length; i += 2) {
     const key = process.argv[i];
-    if (!['--compose', '--env-file', '--output'].includes(key) || !process.argv[i + 1])
-      throw new Error('Use --compose arquivo, --env-file arquivo e/ou --output arquivo.dump.');
+    if (!['--compose', '--env-file', '--output', '--project'].includes(key) || !process.argv[i + 1])
+      throw new Error('Use --compose arquivo, --env-file arquivo, --project nome e/ou --output arquivo.dump.');
     options[key] = process.argv[i + 1];
   }
   const file = path.resolve(options['--output'] || `backups/doceponto-${new Date().toISOString().replace(/[:.]/g, '-')}.dump`);
@@ -20,6 +20,7 @@ async function main() {
   const fd = fs.openSync(file, 'wx', 0o600);
   const output = fs.createWriteStream(file, { fd });
   const args = ['compose'];
+  if (options['--project']) args.push('--project-name', options['--project']);
   if (options['--env-file']) args.push('--env-file', options['--env-file']);
   args.push('-f', options['--compose'] || 'docker-compose.yml', 'exec', '-T', 'db', 'sh', '-c',
     'exec pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom');

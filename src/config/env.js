@@ -5,6 +5,19 @@ const required = (name) => {
 };
 
 const env = process.env.NODE_ENV || 'development';
+if (env === 'production') {
+  require('./production').validateProductionEnv({
+    ...process.env,
+    PUBLIC_ORIGIN: process.env.CORS_ORIGIN,
+  });
+}
+
+function trustProxy(value) {
+  if (!value || value === 'false' || value === '0') return false;
+  if (value === 'true') return 1;
+  if (/^[1-9]\d*$/.test(value)) return Number(value);
+  return value;
+}
 
 const config = {
   env,
@@ -15,7 +28,7 @@ const config = {
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean),
-  trustProxy: process.env.TRUST_PROXY || false,
+  trustProxy: trustProxy(process.env.TRUST_PROXY),
   jwt: {
     secret: required('JWT_SECRET'),
     expiresIn: process.env.JWT_EXPIRES_IN || '8h',

@@ -9,7 +9,7 @@ describe.skipIf(!process.env.FRONTEND_LIVE_TEST)(
   'Interface integrada à API e ao PostgreSQL de QA',
   () => {
     it('integra acompanhamento, gestão de pedidos, estoque, restaurantes e financeiro', async () => {
-      vi.stubEnv('VITE_API_URL', 'http://127.0.0.1:3100/api');
+      vi.stubEnv('VITE_API_URL', process.env.FRONTEND_TEST_API_URL || 'http://127.0.0.1:3100/api');
       const user = userEvent.setup();
       render(
         <MemoryRouter>

@@ -1,7 +1,7 @@
 name: doceponto-production
 
 # Arquivo independente: não combinar com docker-compose.yml.
-# O HTTPS deve terminar no proxy da hospedagem, à frente da porta local 8080.
+# Implantação direta em servidor Docker: o frontend cuida do HTTPS do domínio.
 services:
   db:
     image: postgres:16-alpine
@@ -42,7 +42,11 @@ services:
       ADMIN_SENHA: ${ADMIN_SENHA:?Configure ADMIN_SENHA}
       APP_TIMEZONE: America/Sao_Paulo
       CORS_ORIGIN: ${PUBLIC_ORIGIN:?Configure PUBLIC_ORIGIN com a URL HTTPS do site}
-      TRUST_PROXY: 'true'
+      TRUST_PROXY: '1'
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    stop_grace_period: 35s
     healthcheck:
       test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/api/health/ready',{signal:AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 15s
@@ -56,12 +60,18 @@ services:
   frontend:
     build: ./frontend
     restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${PUBLIC_ORIGIN:?Configure PUBLIC_ORIGIN com a URL HTTPS do site}
     depends_on:
       api: { condition: service_healthy }
     ports:
-      - '127.0.0.1:${HTTP_PORT:-8080}:80'
+      - '${HTTP_PORT:-80}:80'
+      - '${HTTPS_PORT:-443}:443'
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
     healthcheck:
-      test: [CMD, wget, -q, --spider, http://127.0.0.1/]
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:8081/health]
       interval: 15s
       timeout: 5s
       retries: 3
@@ -71,3 +81,5 @@ services:
 
 volumes:
   pgdata:
+  caddy_data:
+  caddy_config:

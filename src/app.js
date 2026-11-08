@@ -7,7 +7,7 @@ const { notFoundHandler, errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
 
-if (config.trustProxy) app.set('trust proxy', config.trustProxy === 'true' ? 1 : config.trustProxy);
+if (config.trustProxy) app.set('trust proxy', config.trustProxy);
 
 app.use(
   helmet({
@@ -22,6 +22,11 @@ app.use(
   }),
 );
 app.use(express.json({ limit: '100kb' }));
+// Respostas de pedidos, login e financeiro não devem ficar em caches intermediários.
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 
 app.use('/api', routes);
 

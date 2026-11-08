@@ -12,8 +12,25 @@ async function main() {
     console.log(`API no ar na porta ${config.port} (${config.env})`);
   });
 
+  let closing = false;
   const shutdown = () => {
-    server.close(() => pool.end().then(() => process.exit(0)));
+    if (closing) return;
+    closing = true;
+    const deadline = setTimeout(() => {
+      console.error('Tempo limite ao encerrar a API.');
+      process.exit(1);
+    }, 30000);
+    deadline.unref();
+    server.close(async () => {
+      try {
+        await pool.end();
+        clearTimeout(deadline);
+        process.exit(0);
+      } catch (error) {
+        console.error('Falha ao encerrar a API:', error.message);
+        process.exit(1);
+      }
+    });
   };
   process.on('SIGTERM', shutdown);
   process.on('SIGINT', shutdown);

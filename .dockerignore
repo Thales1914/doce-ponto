@@ -8,3 +8,6 @@ npm-debug.log
 frontend
 docs
 *.docx
+deploy
+*.log
+**/__pycache__
