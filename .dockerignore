@@ -11,3 +11,4 @@ docs
 deploy
 *.log
 **/__pycache__
+ITENS_PARA_APAGAR
