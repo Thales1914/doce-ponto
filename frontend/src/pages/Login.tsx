@@ -27,7 +27,8 @@ export default function Login() {
     setBusy(true);
     setError(null);
     try {
-      await auth.login(String(form.get('email')).trim(), String(form.get('senha')));
+      // Senhas copiadas de mensagens costumam trazer espaços ou quebras de linha nas pontas.
+      await auth.login(String(form.get('email')).trim(), String(form.get('senha')).trim());
       navigate(destination, { replace: true });
     } catch (err) {
       setError(err);
