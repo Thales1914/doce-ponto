@@ -72,6 +72,10 @@ export default function Login() {
                 name="email"
                 type="email"
                 autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                inputMode="email"
                 required
                 maxLength={255}
                 placeholder="Seu e-mail"
@@ -85,6 +89,11 @@ export default function Login() {
                   name="senha"
                   type={show ? 'text' : 'password'}
                   autoComplete="current-password"
+                  // Ao mostrar a senha o campo vira texto: sem isto o celular põe a
+                  // primeira letra em maiúscula ou "corrige" a senha digitada.
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   required
                   placeholder="Sua senha"
                   disabled={busy}
