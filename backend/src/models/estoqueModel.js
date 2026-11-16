@@ -21,8 +21,8 @@ const list = async (db, { produto_id, tipo, inicio, fim, limit, offset }) => {
   };
   if (produto_id) add('m.produto_id = ?', produto_id);
   if (tipo) add('m.tipo = ?', tipo);
-  if (inicio) add('m.criado_em::date >= ?', inicio);
-  if (fim) add('m.criado_em::date <= ?', fim);
+  if (inicio) add('m.criado_em >= ?::date', inicio);
+  if (fim) add('m.criado_em < ?::date + 1', fim);
   const clause = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
   const { rows: total } = await db.query(`SELECT count(*) AS total FROM estoque_movimentacoes m ${clause}`, params);

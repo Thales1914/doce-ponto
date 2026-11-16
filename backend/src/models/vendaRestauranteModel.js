@@ -33,8 +33,8 @@ const list = async (db, { restaurante_id, status_pagamento, inicio, fim, limit, 
   };
   if (restaurante_id) add('v.restaurante_id = ?', restaurante_id);
   if (status_pagamento) add('v.status_pagamento = ?', status_pagamento);
-  if (inicio) add('v.criado_em::date >= ?', inicio);
-  if (fim) add('v.criado_em::date <= ?', fim);
+  if (inicio) add('v.criado_em >= ?::date', inicio);
+  if (fim) add('v.criado_em < ?::date + 1', fim);
   const clause = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
   const { rows: total } = await db.query(`SELECT count(*) AS total FROM vendas_restaurantes v ${clause}`, params);

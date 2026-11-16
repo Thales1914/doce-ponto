@@ -21,12 +21,6 @@ async function login({ email, senha }) {
   };
 }
 
-async function getProfile(id) {
-  const admin = await adminModel.findById(pool, id);
-  if (!admin) throw AppError.unauthorized('Usuária não encontrada.');
-  return admin;
-}
-
 /** Cria a administradora inicial a partir do .env se ainda não houver nenhuma. */
 async function ensureInitialAdmin() {
   await withTransaction(async (client) => {
@@ -44,4 +38,4 @@ async function ensureInitialAdmin() {
   });
 }
 
-module.exports = { login, getProfile, ensureInitialAdmin };
+module.exports = { login, ensureInitialAdmin };

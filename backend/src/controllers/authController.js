@@ -4,6 +4,7 @@ exports.login = async (req, res) => {
   res.json(await authService.login(req.valid.body));
 };
 
-exports.me = async (req, res) => {
-  res.json(await authService.getProfile(req.admin.id));
+// requireAdmin já carregou a administradora do banco; evita repetir a consulta.
+exports.me = (req, res) => {
+  res.json(req.admin);
 };

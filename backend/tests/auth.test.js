@@ -25,7 +25,7 @@ test('migrations e cadastro inicial são idempotentes e preservam a administrado
   const after = await ctx.pool.query('SELECT * FROM usuarios_admin');
   assert.deepEqual(after.rows, before.rows);
   const { rows } = await ctx.pool.query('SELECT nome FROM schema_migrations ORDER BY nome');
-  assert.deepEqual(rows, ['004_autenticacao.sql', '005_produtos_estoque.sql', '006_pedidos.sql', '007_restaurantes_financeiro.sql'].map((nome) => ({ nome })));
+  assert.deepEqual(rows, ['004_autenticacao.sql', '005_produtos_estoque.sql', '006_pedidos.sql', '007_restaurantes_financeiro.sql', '008_indices_consultas.sql'].map((nome) => ({ nome })));
 });
 
 test('a senha fica armazenada somente como hash bcrypt válido', async () => {

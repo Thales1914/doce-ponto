@@ -20,6 +20,10 @@ function normalize(err) {
     case '22P02':
     case '22003':
       return AppError.badRequest('Valor inválido.');
+    // Conflito entre operações simultâneas: a transação foi desfeita e pode ser repetida.
+    case '40001':
+    case '40P01':
+      return AppError.conflict('Outra operação alterou estes dados ao mesmo tempo. Tente novamente.', 'CONFLITO_CONCORRENCIA');
   }
   return null;
 }

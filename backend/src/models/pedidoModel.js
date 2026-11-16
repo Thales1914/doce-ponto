@@ -11,13 +11,19 @@ const insert = async (db, { numeroPedido, clienteId, observacoes }) => {
   return rows[0] || null;
 };
 
+/** Grava todos os itens num único comando, em vez de uma ida ao banco por item. */
 const insertItens = async (db, pedidoId, itens) => {
-  for (const item of itens) {
-    await db.query(
-      'INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, preco_unitario) VALUES ($1, $2, $3, $4)',
-      [pedidoId, item.produto_id, item.quantidade, item.preco_unitario],
-    );
-  }
+  await db.query(
+    `INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, preco_unitario)
+     SELECT $1, produto_id, quantidade, preco_unitario
+       FROM unnest($2::int[], $3::int[], $4::numeric[]) AS i(produto_id, quantidade, preco_unitario)`,
+    [
+      pedidoId,
+      itens.map((item) => item.produto_id),
+      itens.map((item) => item.quantidade),
+      itens.map((item) => item.preco_unitario),
+    ],
+  );
 };
 
 const insertHistorico = async (db, { pedidoId, statusAnterior, statusNovo, adminId, observacao }) => {
@@ -99,8 +105,8 @@ const list = async (db, { status, cliente_id, cliente, inicio, fim, limit, offse
   if (status) add('p.status = ?', status);
   if (cliente_id) add('p.cliente_id = ?', cliente_id);
   if (cliente) add('(c.nome ILIKE ? OR c.contato ILIKE ?)', `%${cliente}%`);
-  if (inicio) add('p.criado_em::date >= ?', inicio);
-  if (fim) add('p.criado_em::date <= ?', fim);
+  if (inicio) add('p.criado_em >= ?::date', inicio);
+  if (fim) add('p.criado_em < ?::date + 1', fim);
   const clause = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
   const { rows: total } = await db.query(

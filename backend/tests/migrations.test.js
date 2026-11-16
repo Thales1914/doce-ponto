@@ -47,5 +47,5 @@ test('migrations sobre estrutura legada preservam dados, estoque e financeiro', 
   const { migrate } = require('../src/db/migrate');
   await Promise.all([migrate({ silent: true }), migrate({ silent: true })]);
   assert.deepEqual(await snapshot(), antes);
-  assert.equal((await ctx.pool.query('SELECT nome FROM schema_migrations')).rowCount, 7);
+  assert.equal((await ctx.pool.query('SELECT nome FROM schema_migrations')).rowCount, 8);
 });

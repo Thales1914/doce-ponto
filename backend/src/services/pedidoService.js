@@ -83,10 +83,13 @@ async function listar(filtros) {
 }
 
 async function montarDetalhes(db, pedido) {
-  const cliente = await pedidoModel.findCliente(db, pedido.cliente_id);
-  const itens = await pedidoModel.findItens(db, pedido.id);
-  const historico = await pedidoModel.findHistorico(db, pedido.id);
-  const observacoes = await pedidoModel.findObservacoes(db, pedido.id);
+  // Com o pool as consultas rodam em paralelo; numa transação o cliente as enfileira.
+  const [cliente, itens, historico, observacoes] = await Promise.all([
+    pedidoModel.findCliente(db, pedido.cliente_id),
+    pedidoModel.findItens(db, pedido.id),
+    pedidoModel.findHistorico(db, pedido.id),
+    pedidoModel.findObservacoes(db, pedido.id),
+  ]);
   const { estoque_baixado, cliente_id, ...dados } = pedido;
   return {
     ...dados,

@@ -11,7 +11,13 @@
 :{$PORT:8080} {
 	encode zstd gzip
 	header -Server
-	respond /healthz "ok" 200
+	# O Railway sempre atende em HTTPS; o navegador passa a recusar HTTP neste domínio.
+	header Strict-Transport-Security "max-age=31536000"
+
+	# Dentro de handle: um respond solto roda depois dos blocos handle e nunca seria alcançado.
+	handle /healthz {
+		respond "ok" 200
+	}
 
 	@api path /api /api/*
 	handle @api {
