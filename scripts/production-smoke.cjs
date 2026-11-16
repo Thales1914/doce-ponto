@@ -91,9 +91,10 @@ async function main() {
     assert.equal((await request(`/api/pedidos/${list.data.data[0].id}/status`, { method: 'PUT', token, body: { status: 'confirmado' } })).status, 200);
     assert.equal((await request('/api/dashboard/resumo', { token })).data.pendencias.total, 7);
     // Cabeçalhos enviados pelo cliente não podem contornar a limitação de login.
-    for (let i = 0; i < 10; i++) {
+    // Só tentativas recusadas contam: o login correto acima não consome o limite de 10.
+    for (let i = 0; i < 11; i++) {
       const bad = await request('/api/auth/login', { method: 'POST', body: { email: env.ADMIN_EMAIL, senha: 'incorreta' }, headers: { 'X-Forwarded-For': `192.0.2.${i + 1}` } });
-      assert.equal(bad.status, i === 9 ? 429 : 401);
+      assert.equal(bad.status, i === 10 ? 429 : 401);
     }
     docker(['exec', '-T', 'api', 'node', '-e', "if(require('fs').existsSync('/app/tests')||require('fs').existsSync('/app/.env'))process.exit(1)"]);
     docker(['restart', 'api']);
