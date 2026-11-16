@@ -23,7 +23,9 @@
     "test:local": "node scripts/test-docker.cjs",
     "test:docker": "node scripts/test-docker.cjs",
     "test:production": "node scripts/production-smoke.cjs",
+    "test:deploy:config": "node --test scripts/tests/*.test.cjs",
     "deploy:prepare": "node scripts/prepare-deploy.cjs",
+    "deploy:railway:prepare": "node scripts/prepare-railway.cjs",
     "deploy:check": "node scripts/check-deploy.cjs",
     "deploy": "node scripts/deploy.cjs",
     "backup": "node scripts/backup-db.cjs"

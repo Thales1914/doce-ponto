@@ -15,5 +15,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Instalar dependências para validar a preparação do deploy
+        run: npm --prefix backend ci
+      - name: Validar geração das configurações de deploy
+        run: npm run test:deploy:config
       - name: Validar imagens finais com HTTPS e banco descartável
         run: npm run test:production

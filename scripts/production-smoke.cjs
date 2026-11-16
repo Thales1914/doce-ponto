@@ -51,6 +51,8 @@ async function main() {
     assert.equal(config.services.db.ports, undefined);
     assert.equal(config.services.api.ports, undefined);
     docker(['up', '-d', '--build', '--wait', '--wait-timeout', '180'], { stdio: 'inherit' });
+    docker(['exec', '-T', '-e', 'API_UPSTREAM=api:3000', '-e', 'PORT=8080', 'frontend',
+      'caddy', 'validate', '--config', '/etc/caddy/Caddyfile.railway', '--adapter', 'caddyfile']);
     port = Number(docker(['port', 'frontend', '443']).split(':').at(-1));
     const httpPort = Number(docker(['port', 'frontend', '80']).split(':').at(-1));
     const certificate = path.join(temp, 'root.crt');
